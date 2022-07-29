@@ -41,6 +41,7 @@ class _RemoteState extends State<Remote> {
       WebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
   final List _modes = ['Product', 'Interview', 'Timelapse', 'Stop-Motion'];
   final List<String> _commandQueue = [];
+  final int _queueTickTime = 400;
   late Timer commandTick;
 
   double _speed = 0;
@@ -54,7 +55,8 @@ class _RemoteState extends State<Remote> {
     _channel.stream.listen((event) {
       _decodeStream(event);
     });
-    commandTick = Timer.periodic(const Duration(milliseconds: 400), (Timer t) {
+    commandTick =
+        Timer.periodic(Duration(milliseconds: _queueTickTime), (Timer t) {
       _processCommandQueue();
     });
 
@@ -143,8 +145,11 @@ class _RemoteState extends State<Remote> {
   }
 
   _processCommandQueue() {
+    print(_commandQueue);
+
     if (_commandQueue.isNotEmpty) {
       String instruction = _commandQueue.first;
+
       _channel.sink.add("{'action':'$instruction'}");
       _commandQueue.removeAt(0);
 
