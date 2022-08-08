@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 import 'dial.dart';
 import 'readout.dart';
@@ -37,30 +37,23 @@ class Remote extends StatefulWidget {
 }
 
 class _RemoteState extends State<Remote> {
-  final WebSocketChannel _channel =
-      WebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
   final List _modes = ['Product', 'Interview', 'Timelapse', 'Stop-Motion'];
-  final List<String> _commandQueue = [];
+  final List<dynamic> _commandQueue = [];
   final int _queueTickTime = 400;
   late Timer commandTick;
-
+  late IOWebSocketChannel _channel;
   double _speed = 0;
   double _batteryPercent = 0;
   String _currentMode = 'Product';
-  bool _resetMotor = false;
 
   @override
   void initState() {
     super.initState();
-    _channel.stream.listen((event) {
-      _decodeStream(event);
-    });
+    _connect();
     commandTick =
         Timer.periodic(Duration(milliseconds: _queueTickTime), (Timer t) {
       _processCommandQueue();
     });
-
-    //_updateCommandQueue('13');
   }
 
   @override
@@ -88,12 +81,6 @@ class _RemoteState extends State<Remote> {
                     ),
                     Dial(
                       updateCommandQueue: _updateCommandQueue,
-                      resetMotor: () {
-                        setState(() {
-                          _resetMotor = false;
-                        });
-                      },
-                      resetMotorBool: _resetMotor,
                     ),
                     WiperControls(
                       updateCommandQueue: _updateCommandQueue,
@@ -114,6 +101,35 @@ class _RemoteState extends State<Remote> {
   void dispose() {
     _channel.sink.close();
     super.dispose();
+  }
+
+  _connect() {
+    setState(() {
+      _channel = IOWebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
+      debugPrint('connected!');
+      debugPrint(_channel.innerWebSocket.toString());
+    });
+    _channel.stream.listen((event) {
+      _decodeStream(event);
+    }, onError: (e) {
+      debugPrint('error!');
+      _reconnect();
+    }, onDone: () {
+      debugPrint('disconnected!');
+      _reconnect();
+    });
+  }
+
+  _reconnect() async {
+    setState(() {
+      _channel = IOWebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
+    });
+    await Future.delayed(const Duration(milliseconds: 2000));
+
+    if (_channel.innerWebSocket == null) {
+      debugPrint('reconnecting...');
+      _reconnect();
+    }
   }
 
   _decodeStream(String event) {
@@ -141,23 +157,22 @@ class _RemoteState extends State<Remote> {
   }
 
   _updateCommandQueue(String action) {
+    if (action.contains(',')) {
+      action = "{'action':'$action}";
+    } else {
+      action = "{'action':'$action'}";
+    }
     _commandQueue.add(action);
   }
 
   _processCommandQueue() {
-    print(_commandQueue);
-
-    if (_commandQueue.isNotEmpty) {
+    if (_commandQueue.isNotEmpty && _channel.innerWebSocket != null) {
       String instruction = _commandQueue.first;
-
-      _channel.sink.add("{'action':'$instruction'}");
+      debugPrint(instruction);
+      _channel.sink.add(instruction);
       _commandQueue.removeAt(0);
-
-      if (instruction == 'wipOnOff') {
-        setState(() {
-          _resetMotor = true;
-        });
-      }
+    } else if (_channel.innerWebSocket == null) {
+      _reconnect();
     }
   }
 }

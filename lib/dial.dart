@@ -5,15 +5,8 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 
 class Dial extends StatefulWidget {
-  const Dial(
-      {Key? key,
-      required this.updateCommandQueue,
-      required this.resetMotor,
-      required this.resetMotorBool})
-      : super(key: key);
+  const Dial({Key? key, required this.updateCommandQueue}) : super(key: key);
   final Function(String) updateCommandQueue;
-  final VoidCallback resetMotor;
-  final bool resetMotorBool;
 
   @override
   State<Dial> createState() => _DialState();
@@ -23,9 +16,10 @@ class _DialState extends State<Dial> {
   final int radius = 150;
   final double maxRotation = 2.2;
   final int sampleCount = 60;
+  final int maxRPM = 10;
   late Timer speedTimer;
-  int _currentSpeed = 0;
-  int _targetSpeed = 0;
+  //int _currentSpeed = 0;
+  double _targetSpeed = 0;
   double _currentRotation = 0;
   bool _motorRunning = false;
   bool _dialUpdated = false;
@@ -36,7 +30,6 @@ class _DialState extends State<Dial> {
     speedTimer = Timer.periodic(const Duration(milliseconds: 750), (Timer t) {
       _updateSpeed();
       _updateDirection();
-      _resetDial();
     });
   }
 
@@ -116,11 +109,13 @@ class _DialState extends State<Dial> {
       currentRotation = currentRotation.clamp(-maxRotation, maxRotation);
       if (currentRotation.abs() == maxRotation) {
         HapticFeedback.mediumImpact();
+      } else if (currentRotation.abs() == 0) {
+        HapticFeedback.mediumImpact();
       }
 
       _currentRotation = currentRotation;
       _dialUpdated = true;
-      _targetSpeed = _currentRotation.abs() ~/ (maxRotation / 15);
+      _targetSpeed = _currentRotation.abs() / (maxRotation / maxRPM);
     });
   }
 
@@ -133,19 +128,22 @@ class _DialState extends State<Dial> {
   }
 
   _updateSpeed() {
-    if (_motorRunning && (_currentSpeed != _targetSpeed || _dialUpdated)) {
-      // Handle motor speed
-      if (_currentSpeed > _targetSpeed) {
-        widget.updateCommandQueue('13');
-        setState(() {
-          _currentSpeed -= 1;
-        });
-      } else if (_currentSpeed < _targetSpeed) {
-        widget.updateCommandQueue('12');
-        setState(() {
-          _currentSpeed += 1;
-        });
-      }
+    // if (_motorRunning && (_currentSpeed != _targetSpeed || _dialUpdated)) {
+    //   // Handle motor speed
+    //   if (_currentSpeed > _targetSpeed) {
+    //     widget.updateCommandQueue('13');
+    //     setState(() {
+    //       _currentSpeed -= 1;
+    //     });
+    //   } else if (_currentSpeed < _targetSpeed) {
+    //     widget.updateCommandQueue('12');
+    //     setState(() {
+    //       _currentSpeed += 1;
+    //     });
+    //   }
+    // }
+    if (_dialUpdated && _motorRunning) {
+      widget.updateCommandQueue("setSpeed','speed':$_targetSpeed");
     }
   }
 
@@ -160,18 +158,6 @@ class _DialState extends State<Dial> {
       setState(() {
         _dialUpdated = false;
       });
-    }
-  }
-
-  _resetDial() {
-    if (widget.resetMotorBool) {
-      setState(() {
-        _currentRotation = 0;
-        _currentSpeed = 0;
-        _targetSpeed = 0;
-      });
-
-      widget.resetMotor();
     }
   }
 }

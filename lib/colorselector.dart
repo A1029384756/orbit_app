@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ColorSelector extends StatelessWidget {
   const ColorSelector({Key? key, required this.updateCommandQueue})
@@ -70,6 +71,7 @@ class ColorButton extends StatelessWidget {
         child: InkWell(
           onTap: () {
             updateCommandQueue(apiCommand);
+            HapticFeedback.lightImpact();
           },
           customBorder: const CircleBorder(),
         ),
