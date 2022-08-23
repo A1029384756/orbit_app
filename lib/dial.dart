@@ -1,65 +1,55 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
 class Dial extends StatefulWidget {
-  const Dial({Key? key, required this.updateCommandQueue}) : super(key: key);
-  final Function(String) updateCommandQueue;
+  const Dial(
+      {Key? key,
+      required this.radius,
+      required this.maxRotation,
+      required this.rotationValue,
+      required this.onOff,
+      required this.onTap,
+      required this.onDialUpdate})
+      : super(key: key);
+  final int radius;
+  final double maxRotation;
+  final double rotationValue;
+  final bool onOff;
+  final VoidCallback onTap;
+  final Function(double) onDialUpdate;
 
   @override
   State<Dial> createState() => _DialState();
 }
 
 class _DialState extends State<Dial> {
-  final int radius = 150;
-  final double maxRotation = 2.2;
-  final int sampleCount = 60;
-  final int maxRPM = 10;
-  late Timer speedTimer;
-  //int _currentSpeed = 0;
-  double _targetSpeed = 0;
-  double _currentRotation = 0;
-  bool _motorRunning = false;
-  bool _dialUpdated = false;
-
-  @override
-  void initState() {
-    super.initState();
-    speedTimer = Timer.periodic(const Duration(milliseconds: 750), (Timer t) {
-      _updateSpeed();
-      _updateDirection();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return (GestureDetector(
       onPanUpdate: _panHandler,
       child: Stack(alignment: Alignment.center, children: [
         Transform.rotate(
-            angle: _currentRotation,
+            angle: widget.rotationValue,
             child: Image(
               image: const AssetImage('assets/Dial.png'),
-              width: radius * 2,
-              height: radius * 2,
+              width: widget.radius * 2,
+              height: widget.radius * 2,
             )),
         Material(
           color: Colors.transparent,
           child: Ink(
-            width: radius * 2,
-            height: radius * 2,
+            width: widget.radius * 2,
+            height: widget.radius * 2,
             decoration: BoxDecoration(
-                //color: _motorRunning ? Colors.green : Colors.red,
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                    image: _motorRunning
+                    image: widget.onOff
                         ? const AssetImage('assets/orbit_start.png')
                         : const AssetImage('assets/orbit_stop.png'))),
             child: InkWell(
-              onTap: _startStop,
-              radius: radius * 2,
+              onTap: widget.onTap,
+              radius: widget.radius * 2,
               customBorder: const CircleBorder(),
             ),
           ),
@@ -68,16 +58,10 @@ class _DialState extends State<Dial> {
     ));
   }
 
-  @override
-  void dispose() {
-    speedTimer.cancel();
-    super.dispose();
-  }
-
   _panHandler(DragUpdateDetails d) {
     /// Pan location on the wheel
-    bool onTop = d.localPosition.dy <= radius;
-    bool onLeftSide = d.localPosition.dx <= radius;
+    bool onTop = d.localPosition.dy <= widget.radius;
+    bool onLeftSide = d.localPosition.dx <= widget.radius;
     bool onRightSide = !onLeftSide;
     bool onBottom = !onTop;
 
@@ -103,61 +87,17 @@ class _DialState extends State<Dial> {
     double rotationalChange =
         (verticalRotation + horizontalRotation) * pi / 360;
 
-    setState(() {
-      double currentRotation = _currentRotation + rotationalChange;
+    double currentRotation = widget.rotationValue + rotationalChange;
 
-      currentRotation = currentRotation.clamp(-maxRotation, maxRotation);
-      if (currentRotation.abs() == maxRotation) {
-        HapticFeedback.mediumImpact();
-      } else if (currentRotation.abs() == 0) {
-        HapticFeedback.mediumImpact();
-      }
-
-      _currentRotation = currentRotation;
-      _dialUpdated = true;
-      _targetSpeed = _currentRotation.abs() / (maxRotation / maxRPM);
-    });
-  }
-
-  _startStop() {
-    HapticFeedback.lightImpact();
-    widget.updateCommandQueue('96');
-    setState(() {
-      _motorRunning = !_motorRunning;
-    });
-  }
-
-  _updateSpeed() {
-    // if (_motorRunning && (_currentSpeed != _targetSpeed || _dialUpdated)) {
-    //   // Handle motor speed
-    //   if (_currentSpeed > _targetSpeed) {
-    //     widget.updateCommandQueue('13');
-    //     setState(() {
-    //       _currentSpeed -= 1;
-    //     });
-    //   } else if (_currentSpeed < _targetSpeed) {
-    //     widget.updateCommandQueue('12');
-    //     setState(() {
-    //       _currentSpeed += 1;
-    //     });
-    //   }
-    // }
-    if (_dialUpdated && _motorRunning) {
-      widget.updateCommandQueue("setSpeed','speed':$_targetSpeed");
+    currentRotation =
+        currentRotation.clamp(-widget.maxRotation, widget.maxRotation);
+    if (currentRotation.abs() == widget.maxRotation &&
+        currentRotation.abs() != widget.rotationValue.abs()) {
+      HapticFeedback.mediumImpact();
+    } else if (currentRotation == 0 && widget.rotationValue != 0) {
+      HapticFeedback.mediumImpact();
     }
-  }
 
-  _updateDirection() {
-    if (_dialUpdated && _motorRunning) {
-      if (_currentRotation < 0) {
-        widget.updateCommandQueue('98');
-      } else if (_currentRotation > 0) {
-        widget.updateCommandQueue('97');
-      }
-
-      setState(() {
-        _dialUpdated = false;
-      });
-    }
+    widget.onDialUpdate(widget.rotationValue);
   }
 }

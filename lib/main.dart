@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:orbit_app/motorinterface.dart';
+import 'package:provider/provider.dart';
 
 import 'dial.dart';
 import 'readout.dart';
@@ -10,7 +9,10 @@ import 'wipercontrols.dart';
 import 'colorselector.dart';
 
 void main() {
-  runApp(const OrbitApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => MotorInterface('ws://192.168.4.1/ws'),
+    child: const OrbitApp(),
+  ));
 }
 
 class OrbitApp extends StatelessWidget {
@@ -37,25 +39,6 @@ class Remote extends StatefulWidget {
 }
 
 class _RemoteState extends State<Remote> {
-  final List _modes = ['Product', 'Interview', 'Timelapse', 'Stop-Motion'];
-  final List<dynamic> _commandQueue = [];
-  final int _queueTickTime = 400;
-  late Timer commandTick;
-  late IOWebSocketChannel _channel;
-  double _speed = 0;
-  double _batteryPercent = 0;
-  String _currentMode = 'Product';
-
-  @override
-  void initState() {
-    super.initState();
-    _connect();
-    commandTick =
-        Timer.periodic(Duration(milliseconds: _queueTickTime), (Timer t) {
-      _processCommandQueue();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,104 +58,36 @@ class _RemoteState extends State<Remote> {
                       'MARBL ORBIT',
                       style: TextStyle(fontSize: 46, color: Colors.white70),
                     ),
-                    Readout(
-                      battery: _batteryPercent,
-                      rpm: _speed,
+                    Consumer<MotorInterface>(
+                      builder: (context, motor, child) {
+                        return Readout(
+                          battery: motor.batteryPercent,
+                          rpm: motor.speed,
+                        );
+                      },
                     ),
-                    Dial(
-                      updateCommandQueue: _updateCommandQueue,
+                    Consumer<MotorInterface>(
+                      builder: (context, motor, child) {
+                        return Dial(
+                          radius: 150,
+                          maxRotation: 2.2,
+                          rotationValue: motor.dialRotation,
+                          onOff: motor.motorRunning,
+                          onTap: motor.startStop,
+                          onDialUpdate: motor.updateDialStatus,
+                        );
+                      },
                     ),
-                    WiperControls(
-                      updateCommandQueue: _updateCommandQueue,
-                    ),
+                    WiperControls(updateCommandQueue: ((p0) {})),
                     ColorSelector(
-                      updateCommandQueue: _updateCommandQueue,
+                      updateCommandQueue: ((p0) {}),
                     )
                   ]))
         ],
       ),
       bottomNavigationBar: BottomBar(
-        changeModes: _changeModes,
+        changeModes: ((p0) {}),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _channel.sink.close();
-    super.dispose();
-  }
-
-  _connect() {
-    setState(() {
-      _channel = IOWebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
-      debugPrint('connected!');
-      debugPrint(_channel.innerWebSocket.toString());
-    });
-    _channel.stream.listen((event) {
-      _decodeStream(event);
-    }, onError: (e) {
-      debugPrint('error!');
-      _reconnect();
-    }, onDone: () {
-      debugPrint('disconnected!');
-      _reconnect();
-    });
-  }
-
-  _reconnect() async {
-    setState(() {
-      _channel = IOWebSocketChannel.connect(Uri.parse('ws://192.168.4.1/ws'));
-    });
-    await Future.delayed(const Duration(milliseconds: 2000));
-
-    if (_channel.innerWebSocket == null) {
-      debugPrint('reconnecting...');
-      _reconnect();
-    }
-  }
-
-  _decodeStream(String event) {
-    List data = event.split(',');
-    setState(() {
-      _batteryPercent = double.parse(data[0]);
-      _speed = double.parse(data[1]);
-      _currentMode = _modes[int.parse(data[2]) - 2];
-    });
-  }
-
-  _changeModes(String clickedMode) {
-    int currentModeIndex = _modes.indexOf(_currentMode);
-    int newModeIndex = _modes.indexOf(clickedMode);
-
-    if (newModeIndex < currentModeIndex) {
-      currentModeIndex -= _modes.length;
-    }
-
-    int numSteps = newModeIndex - currentModeIndex;
-
-    for (var i = 0; i < numSteps; i++) {
-      _updateCommandQueue('20');
-    }
-  }
-
-  _updateCommandQueue(String action) {
-    if (action.contains(',')) {
-      action = "{'action':'$action}";
-    } else {
-      action = "{'action':'$action'}";
-    }
-    _commandQueue.add(action);
-  }
-
-  _processCommandQueue() {
-    if (_commandQueue.isNotEmpty && _channel.innerWebSocket != null) {
-      String instruction = _commandQueue.first;
-      debugPrint(instruction);
-      _channel.sink.add(instruction);
-      _commandQueue.removeAt(0);
-    } else if (_channel.innerWebSocket == null) {
-      _reconnect();
-    }
   }
 }
