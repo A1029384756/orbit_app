@@ -54,7 +54,7 @@ class MotorInterface extends ChangeNotifier {
       });
       await Future.delayed(const Duration(milliseconds: 1000));
       updateCommandQueue("{'action':'setSpeed','speed':'0'}");
-      pingInterval = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      pingInterval = Timer.periodic(const Duration(milliseconds: 750), (timer) {
         sendCommandFromQueue();
       });
     }
@@ -113,6 +113,8 @@ class MotorInterface extends ChangeNotifier {
     position = 0;
     p1 = false;
     p2 = false;
+
+    notifyListeners();
   }
 
   controlWiperMode(String wiperCommand) {
