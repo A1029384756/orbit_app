@@ -9,14 +9,14 @@ class Dial extends StatelessWidget {
       required this.maxRotation,
       required this.rotationValue,
       required this.onOff,
-      required this.onTap,
+      required this.toggleDial,
       required this.onDialUpdate})
       : super(key: key);
   final int radius;
   final double maxRotation;
   final double rotationValue;
   final bool onOff;
-  final VoidCallback onTap;
+  final Function() toggleDial;
   final Function(double) onDialUpdate;
 
   @override
@@ -43,7 +43,10 @@ class Dial extends StatelessWidget {
                         ? const AssetImage('assets/orbit_start.png')
                         : const AssetImage('assets/orbit_stop.png'))),
             child: InkWell(
-              onTap: onTap,
+              onTap: () {
+                toggleDial();
+                HapticFeedback.heavyImpact();
+              },
               radius: radius * 2,
               customBorder: const CircleBorder(),
             ),

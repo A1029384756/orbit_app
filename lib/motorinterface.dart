@@ -25,14 +25,17 @@ class MotorInterface extends ChangeNotifier {
   String currentMode = 'Product';
   MotorDirection direction = MotorDirection.ccw;
 
+  String visorColor = 'white';
+
   MotorInterface(String url)
       : _channel = IOWebSocketChannel.connect(url,
-            pingInterval: const Duration(seconds: 2)),
+            pingInterval: const Duration(milliseconds: 1000)),
         _url = url {
     websocketReconnect();
   }
 
   websocketReconnect() async {
+    _commandQueue.clear();
     await Future.delayed(const Duration(milliseconds: 1000));
     _channel = IOWebSocketChannel.connect(Uri.parse(_url));
     await Future.delayed(const Duration(milliseconds: 2000));
@@ -54,7 +57,7 @@ class MotorInterface extends ChangeNotifier {
       });
       await Future.delayed(const Duration(milliseconds: 1000));
       updateCommandQueue("{'action':'setSpeed','speed':'0'}");
-      pingInterval = Timer.periodic(const Duration(milliseconds: 750), (timer) {
+      pingInterval = Timer.periodic(const Duration(milliseconds: 500), (timer) {
         sendCommandFromQueue();
       });
     }
@@ -63,7 +66,43 @@ class MotorInterface extends ChangeNotifier {
   startStop() {
     if (connected) {
       updateCommandQueue("{'action':'96'}");
+
+      if (!motorRunning) {
+        if (dialRotation < 0) {
+          while (_commandQueue.contains("{'action':'97'}")) {
+            _commandQueue.remove("{'action':'97'}");
+          }
+          direction = MotorDirection.ccw;
+          updateCommandQueue("{'action':'98'}");
+          updateCommandQueue("{'action':'98'}");
+        } else if (dialRotation > 0) {
+          while (_commandQueue.contains("{'action':'98'}")) {
+            _commandQueue.remove("{'action':'98'}");
+          }
+          direction = MotorDirection.cw;
+          updateCommandQueue("{'action':'97'}");
+          updateCommandQueue("{'action':'97'}");
+        }
+      }
       notifyListeners();
+    }
+  }
+
+  updateMotorDirection() {
+    if (dialRotation < 0 && direction == MotorDirection.cw) {
+      while (_commandQueue.contains("{'action':'97'}")) {
+        _commandQueue.remove("{'action':'97'}");
+      }
+      direction = MotorDirection.ccw;
+      updateCommandQueue("{'action':'98'}");
+      updateCommandQueue("{'action':'98'}");
+    } else if (dialRotation > 0 && direction == MotorDirection.ccw) {
+      while (_commandQueue.contains("{'action':'98'}")) {
+        _commandQueue.remove("{'action':'98'}");
+      }
+      direction = MotorDirection.cw;
+      updateCommandQueue("{'action':'97'}");
+      updateCommandQueue("{'action':'97'}");
     }
   }
 
@@ -71,21 +110,7 @@ class MotorInterface extends ChangeNotifier {
     if (connected) {
       dialRotation = rotation;
 
-      if (dialRotation < 0 && direction == MotorDirection.cw) {
-        while (_commandQueue.contains("{'action':'97'}")) {
-          _commandQueue.remove("{'action':'97'}");
-        }
-        direction = MotorDirection.ccw;
-        updateCommandQueue("{'action':'98'}");
-        updateCommandQueue("{'action':'98'}");
-      } else if (dialRotation > 0 && direction == MotorDirection.ccw) {
-        while (_commandQueue.contains("{'action':'98'}")) {
-          _commandQueue.remove("{'action':'98'}");
-        }
-        direction = MotorDirection.cw;
-        updateCommandQueue("{'action':'97'}");
-        updateCommandQueue("{'action':'97'}");
-      }
+      updateMotorDirection();
 
       double targetSpeed = dialRotation.abs() / (2.2 / 10);
 
@@ -102,6 +127,7 @@ class MotorInterface extends ChangeNotifier {
 
   changeLEDColor(String color) {
     updateCommandQueue("{'action':'$color'}");
+    visorColor = color;
   }
 
   resetViewState() {

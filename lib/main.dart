@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:orbit_app/motorinterface.dart';
 import 'package:provider/provider.dart';
@@ -23,10 +23,15 @@ class OrbitApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const title = 'Orbit App';
-    return const MaterialApp(
-      title: title,
-      home: Remote(),
-    );
+    return Consumer<MotorInterface>(builder: (context, value, child) {
+      return CupertinoApp(
+        title: title,
+        home: const Remote(),
+        theme: CupertinoThemeData(
+            brightness: Brightness.dark,
+            primaryColor: colorRGBAInfo[value.visorColor]),
+      );
+    });
   }
 }
 
@@ -58,6 +63,7 @@ class Remote extends StatelessWidget {
               Provider.of<MotorInterface>(context, listen: false)
                   .changeMode(modes[value]);
               debugPrint(modes[value]);
+              HapticFeedback.mediumImpact();
             },
           ),
           tabBuilder: ((context, index) {
@@ -90,7 +96,14 @@ class ModeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const Text('MARBL ORBIT'),
+              Consumer<MotorInterface>(
+                  builder: (context, value, child) => Text(
+                        'MARBL ORBIT',
+                        style: TextStyle(
+                            color: value.connected
+                                ? const Color.fromARGB(255, 25, 189, 50)
+                                : colorRGBAInfo['red']),
+                      )),
               Consumer<MotorInterface>(
                 builder: (context, value, child) =>
                     Readout(battery: value.batteryPercent, rpm: value.speed),
@@ -101,7 +114,7 @@ class ModeScreen extends StatelessWidget {
                     maxRotation: 2.2,
                     rotationValue: value.dialRotation,
                     onOff: value.motorRunning,
-                    onTap: value.startStop,
+                    toggleDial: value.startStop,
                     onDialUpdate: value.updateDialStatus),
               ),
               Consumer<MotorInterface>(
