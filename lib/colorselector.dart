@@ -12,35 +12,29 @@ class ColorSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ColorButton(
-          color: Colors.transparent,
-          apiCommand: 'noled',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: Colors.transparent,
+            apiCommand: 'noled',
+            updateCommandQueue: updateCommandQueue),
         ColorButton(
-          color: const Color.fromARGB(255, 231, 135, 167),
-          apiCommand: 'pink',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: const Color.fromARGB(255, 231, 135, 167),
+            apiCommand: 'pink',
+            updateCommandQueue: updateCommandQueue),
         ColorButton(
-          color: const Color.fromARGB(255, 184, 54, 54),
-          apiCommand: 'red',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: const Color.fromARGB(255, 184, 54, 54),
+            apiCommand: 'red',
+            updateCommandQueue: updateCommandQueue),
         ColorButton(
-          color: const Color.fromARGB(255, 238, 129, 56),
-          apiCommand: 'orange',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: const Color.fromARGB(255, 238, 129, 56),
+            apiCommand: 'orange',
+            updateCommandQueue: updateCommandQueue),
         ColorButton(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          apiCommand: 'white',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: const Color.fromARGB(255, 255, 255, 255),
+            apiCommand: 'white',
+            updateCommandQueue: updateCommandQueue),
         ColorButton(
-          color: const Color.fromARGB(255, 195, 35, 243),
-          apiCommand: 'purple',
-          updateCommandQueue: updateCommandQueue,
-        ),
+            color: const Color.fromARGB(255, 195, 35, 243),
+            apiCommand: 'purple',
+            updateCommandQueue: updateCommandQueue),
       ],
     ));
   }

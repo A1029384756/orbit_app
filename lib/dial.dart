@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
-class Dial extends StatefulWidget {
+class Dial extends StatelessWidget {
   const Dial(
       {Key? key,
       required this.radius,
@@ -20,36 +20,31 @@ class Dial extends StatefulWidget {
   final Function(double) onDialUpdate;
 
   @override
-  State<Dial> createState() => _DialState();
-}
-
-class _DialState extends State<Dial> {
-  @override
   Widget build(BuildContext context) {
     return (GestureDetector(
       onPanUpdate: _panHandler,
       child: Stack(alignment: Alignment.center, children: [
         Transform.rotate(
-            angle: widget.rotationValue,
+            angle: rotationValue,
             child: Image(
               image: const AssetImage('assets/Dial.png'),
-              width: widget.radius * 2,
-              height: widget.radius * 2,
+              width: radius * 2,
+              height: radius * 2,
             )),
         Material(
           color: Colors.transparent,
           child: Ink(
-            width: widget.radius * 2,
-            height: widget.radius * 2,
+            width: radius * 2,
+            height: radius * 2,
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                    image: widget.onOff
+                    image: onOff
                         ? const AssetImage('assets/orbit_start.png')
                         : const AssetImage('assets/orbit_stop.png'))),
             child: InkWell(
-              onTap: widget.onTap,
-              radius: widget.radius * 2,
+              onTap: onTap,
+              radius: radius * 2,
               customBorder: const CircleBorder(),
             ),
           ),
@@ -60,8 +55,8 @@ class _DialState extends State<Dial> {
 
   _panHandler(DragUpdateDetails d) {
     /// Pan location on the wheel
-    bool onTop = d.localPosition.dy <= widget.radius;
-    bool onLeftSide = d.localPosition.dx <= widget.radius;
+    bool onTop = d.localPosition.dy <= radius;
+    bool onLeftSide = d.localPosition.dx <= radius;
     bool onRightSide = !onLeftSide;
     bool onBottom = !onTop;
 
@@ -87,17 +82,19 @@ class _DialState extends State<Dial> {
     double rotationalChange =
         (verticalRotation + horizontalRotation) * pi / 360;
 
-    double currentRotation = widget.rotationValue + rotationalChange;
+    double currentRotation = rotationValue + rotationalChange;
 
-    currentRotation =
-        currentRotation.clamp(-widget.maxRotation, widget.maxRotation);
-    if (currentRotation.abs() == widget.maxRotation &&
-        currentRotation.abs() != widget.rotationValue.abs()) {
+    currentRotation = currentRotation.clamp(-maxRotation, maxRotation);
+    if (currentRotation.abs() == maxRotation &&
+        currentRotation.abs() != rotationValue.abs()) {
       HapticFeedback.mediumImpact();
-    } else if (currentRotation == 0 && widget.rotationValue != 0) {
+      debugPrint('haptic');
+    } else if ((currentRotation).abs() < 0.01 &&
+        currentRotation.abs() != rotationValue.abs()) {
       HapticFeedback.mediumImpact();
+      debugPrint('haptic');
     }
 
-    widget.onDialUpdate(widget.rotationValue);
+    onDialUpdate(currentRotation);
   }
 }
