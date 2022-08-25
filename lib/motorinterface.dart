@@ -69,18 +69,12 @@ class MotorInterface extends ChangeNotifier {
 
       if (!motorRunning) {
         if (dialRotation < 0) {
-          while (_commandQueue.contains("{'action':'97'}")) {
-            _commandQueue.remove("{'action':'97'}");
-          }
+          _commandQueue.removeWhere((element) => element == "{'action':'97'}");
           direction = MotorDirection.ccw;
           updateCommandQueue("{'action':'98'}");
-          updateCommandQueue("{'action':'98'}");
         } else if (dialRotation > 0) {
-          while (_commandQueue.contains("{'action':'98'}")) {
-            _commandQueue.remove("{'action':'98'}");
-          }
+          _commandQueue.removeWhere((element) => element == "{'action':'98'}");
           direction = MotorDirection.cw;
-          updateCommandQueue("{'action':'97'}");
           updateCommandQueue("{'action':'97'}");
         }
       }
@@ -88,36 +82,25 @@ class MotorInterface extends ChangeNotifier {
     }
   }
 
-  updateMotorDirection() {
-    if (dialRotation < 0 && direction == MotorDirection.cw) {
-      while (_commandQueue.contains("{'action':'97'}")) {
-        _commandQueue.remove("{'action':'97'}");
-      }
-      direction = MotorDirection.ccw;
-      updateCommandQueue("{'action':'98'}");
-      updateCommandQueue("{'action':'98'}");
-    } else if (dialRotation > 0 && direction == MotorDirection.ccw) {
-      while (_commandQueue.contains("{'action':'98'}")) {
-        _commandQueue.remove("{'action':'98'}");
-      }
-      direction = MotorDirection.cw;
-      updateCommandQueue("{'action':'97'}");
-      updateCommandQueue("{'action':'97'}");
-    }
-  }
-
   updateDialStatus(double rotation) {
     if (connected) {
       dialRotation = rotation;
 
-      updateMotorDirection();
+      if (dialRotation < 0 && direction == MotorDirection.cw) {
+        _commandQueue.removeWhere((element) => element == "{'action':'97'}");
+        direction = MotorDirection.ccw;
+        updateCommandQueue("{'action':'98'}");
+      } else if (dialRotation > 0 && direction == MotorDirection.ccw) {
+        _commandQueue.removeWhere((element) => element == "{'action':'98'}");
+        direction = MotorDirection.cw;
+        updateCommandQueue("{'action':'97'}");
+      }
 
       double targetSpeed = dialRotation.abs() / (2.2 / 10);
 
       if (_commandQueue.isNotEmpty) {
-        if (_commandQueue.last.contains("{'action':'setSpeed'")) {
-          _commandQueue.removeLast();
-        }
+        _commandQueue
+            .removeWhere((element) => element.contains("{'action':'setSpeed'"));
       }
       updateCommandQueue("{'action':'setSpeed','speed':'$targetSpeed'}");
 
@@ -156,6 +139,15 @@ class MotorInterface extends ChangeNotifier {
         break;
       case 'wipOnOff':
         p1 = p2 = false;
+        if (dialRotation < 0) {
+          _commandQueue.removeWhere((element) => element == "{'action':'97'}");
+          direction = MotorDirection.ccw;
+          updateCommandQueue("{'action':'98'}");
+        } else if (dialRotation > 0) {
+          _commandQueue.removeWhere((element) => element == "{'action':'98'}");
+          direction = MotorDirection.cw;
+          updateCommandQueue("{'action':'97'}");
+        }
         break;
       default:
         break;
