@@ -1,20 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:orbit_app/mode_screens/interviewmode.dart';
+import 'package:orbit_app/mode_screens/stopmotionmode.dart';
+import 'package:orbit_app/mode_screens/timelapsemode.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:orbit_app/motorinterface.dart';
+import 'package:orbit_app/ui_elements/bottombar.dart';
+import 'package:orbit_app/mode_screens/productmode.dart';
+import 'package:orbit_app/ui_elements/connectbutton.dart';
+import 'package:orbit_app/ui_elements/connectionindicator.dart';
 import 'package:provider/provider.dart';
 
-import 'dial.dart';
-import 'readout.dart';
-import 'bottombar.dart';
-import 'wipercontrols.dart';
-import 'colorselector.dart';
-
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (context) => MotorInterface('ws://192.168.4.1/ws'),
-    child: const OrbitApp(),
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((value) => runApp(ChangeNotifierProvider(
+            create: (context) => MotorInterface('ws://192.168.4.1/ws'),
+            child: const OrbitApp(),
+          )));
 }
 
 class OrbitApp extends StatelessWidget {
@@ -50,6 +54,13 @@ class Remote extends StatelessWidget {
           modeInformation['Stopmotion']!['modeScaler']!),
     ];
 
+    const List<StatelessWidget> modeScreens = [
+      ProductMode(),
+      InterviewMode(),
+      TimelapseMode(),
+      StopmotionMode()
+    ];
+
     return DefaultTextStyle(
         style: CupertinoTheme.of(context).textTheme.textStyle,
         child: CupertinoTabScaffold(
@@ -69,67 +80,23 @@ class Remote extends StatelessWidget {
           tabBuilder: ((context, index) {
             return CupertinoTabView(
               restorationScopeId: 'cupertino_tab_view_$index',
-              builder: (context) => const ModeScreen(),
+              builder: (context) => CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    leading: Consumer<MotorInterface>(
+                      builder: (context, value, child) => ConnectionIndicator(
+                          connected:
+                              value.connected == ConnectionStatus.connected),
+                    ),
+                    trailing: Consumer<MotorInterface>(
+                        builder: (context, value, child) => ConnectButton(
+                              connectToOrbit: value.connectToOrbit,
+                              connectionStatus: value.connected,
+                            )),
+                  ),
+                  child: modeScreens[index]),
+              defaultTitle: '${tabInfo[index].title} Mode',
             );
           }),
         ));
-  }
-}
-
-class ModeScreen extends StatelessWidget {
-  const ModeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-        child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage('assets/bg.jpg'), fit: BoxFit.cover)),
-        ),
-        Padding(
-          padding:
-              const EdgeInsets.only(left: 30, top: 30, right: 30, bottom: 80),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) => Text(
-                        'MARBL ORBIT',
-                        style: TextStyle(
-                            color: value.connected
-                                ? const Color.fromARGB(255, 25, 189, 50)
-                                : colorRGBAInfo['red']),
-                      )),
-              Consumer<MotorInterface>(
-                builder: (context, value, child) =>
-                    Readout(battery: value.batteryPercent, rpm: value.speed),
-              ),
-              Consumer<MotorInterface>(
-                builder: (context, value, child) => Dial(
-                    radius: 150,
-                    maxRotation: 2.2,
-                    rotationValue: value.dialRotation,
-                    onOff: value.motorRunning,
-                    toggleDial: value.startStop,
-                    onDialUpdate: value.updateDialStatus),
-              ),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) => WiperControls(
-                        updateCommandQueue: value.controlWiperMode,
-                        p1: value.p1,
-                        p2: value.p2,
-                      )),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) =>
-                      ColorSelector(updateCommandQueue: value.changeLEDColor))
-            ],
-          ),
-        ),
-      ],
-    ));
   }
 }
