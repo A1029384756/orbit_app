@@ -48,9 +48,8 @@ class MotorInterface extends ChangeNotifier {
       _channel = IOWebSocketChannel.connect(Uri.parse(_url));
       await Future.delayed(const Duration(milliseconds: 2000));
 
-      connectionAttempts++;
-
       if (_channel.innerWebSocket == null) {
+        connectionAttempts++;
         debugPrint('Websocket not found');
         connectToOrbit();
       } else {
