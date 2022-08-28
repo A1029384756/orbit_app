@@ -33,22 +33,29 @@ class MotorInterface extends ChangeNotifier {
 
   MotorInterface(String url) : _url = url;
 
+  int maxConnectionAttempts = 5;
+  int connectionAttempts = 0;
+
   connectToOrbit() async {
     if (connected == ConnectionStatus.connected) {
       _channel.sink.close();
-    } else {
+    } else if (connectionAttempts < maxConnectionAttempts &&
+        connected != ConnectionStatus.connecting) {
       connected = ConnectionStatus.connecting;
       notifyListeners();
-
       _commandQueue.clear();
       await Future.delayed(const Duration(milliseconds: 1000));
       _channel = IOWebSocketChannel.connect(Uri.parse(_url));
       await Future.delayed(const Duration(milliseconds: 2000));
+
+      connectionAttempts++;
+
       if (_channel.innerWebSocket == null) {
         debugPrint('Websocket not found');
         connectToOrbit();
       } else {
         debugPrint('Connected');
+        connectionAttempts = 0;
         connected = ConnectionStatus.connected;
 
         _channel.stream.listen((event) {
@@ -61,13 +68,21 @@ class MotorInterface extends ChangeNotifier {
           pingInterval.cancel();
           resetViewState();
         });
+
         await Future.delayed(const Duration(milliseconds: 1000));
+        updateCommandQueue(
+            "{'action':'setMode','mode':'${mode_info.modes.indexOf(currentMode) + 2}'}");
         updateCommandQueue("{'action':'setSpeed','speed':'0'}");
         pingInterval =
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
           sendCommandFromQueue();
         });
       }
+    } else {
+      debugPrint('Max connection attempts exceeded');
+      connectionAttempts = 0;
+      connected = ConnectionStatus.disconnected;
+      notifyListeners();
     }
   }
 
@@ -170,6 +185,8 @@ class MotorInterface extends ChangeNotifier {
     if (connected == ConnectionStatus.connected) {
       int index = mode_info.modes.indexOf(mode) + 2;
       updateCommandQueue("{'action':'setMode','mode':'$index'}");
+    } else {
+      currentMode = mode;
     }
   }
 

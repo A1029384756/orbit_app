@@ -50,8 +50,8 @@ class Remote extends StatelessWidget {
           modeInformation['Interview']!['modeScaler']!),
       TabInfo('Timelapse', CupertinoIcons.time,
           modeInformation['Timelapse']!['modeScaler']!),
-      TabInfo('Stopmotion', CupertinoIcons.timer,
-          modeInformation['Stopmotion']!['modeScaler']!),
+      TabInfo('Stop-Motion', CupertinoIcons.timer,
+          modeInformation['Stop-Motion']!['modeScaler']!),
     ];
 
     const List<StatelessWidget> modeScreens = [
@@ -87,6 +87,7 @@ class Remote extends StatelessWidget {
                           connected:
                               value.connected == ConnectionStatus.connected),
                     ),
+                    middle: Text('${tabInfo[index].title} Mode'),
                     trailing: Consumer<MotorInterface>(
                         builder: (context, value, child) => ConnectButton(
                               connectToOrbit: value.connectToOrbit,
@@ -94,7 +95,6 @@ class Remote extends StatelessWidget {
                             )),
                   ),
                   child: modeScreens[index]),
-              defaultTitle: '${tabInfo[index].title} Mode',
             );
           }),
         ));
