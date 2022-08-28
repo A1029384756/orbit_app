@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class WiperControls extends StatefulWidget {
-  const WiperControls({Key? key, required this.updateCommandQueue})
+class WiperControls extends StatelessWidget {
+  const WiperControls(
+      {Key? key,
+      required this.updateCommandQueue,
+      required this.p1,
+      required this.p2})
       : super(key: key);
+  final bool p1;
+  final bool p2;
   final Function(String) updateCommandQueue;
-
-  @override
-  State<WiperControls> createState() => _WiperControlsState();
-}
-
-class _WiperControlsState extends State<WiperControls> {
   final TextStyle buttonFormatting =
       const TextStyle(fontSize: 24, color: Colors.white70);
-  bool p1 = false;
-  bool p2 = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,47 +24,29 @@ class _WiperControlsState extends State<WiperControls> {
             'P1',
             style: buttonFormatting,
           ),
-          onPressed: _pressP1,
+          onPressed: updateCommandQueue,
           active: p1,
+          command: 'P1',
         ),
         ClearButton(
           displayText: Text(
             'Clear',
             style: buttonFormatting,
           ),
-          onPressed: _pressClear,
+          onPressed: updateCommandQueue,
+          command: 'wipOnOff',
         ),
         P1P2Button(
           displayText: Text(
             'P2',
             style: buttonFormatting,
           ),
-          onPressed: _pressP2,
+          onPressed: updateCommandQueue,
           active: p2,
+          command: 'P2',
         ),
       ],
     ));
-  }
-
-  _pressP1() {
-    widget.updateCommandQueue('21');
-    setState(() {
-      p1 = true;
-    });
-  }
-
-  _pressP2() {
-    widget.updateCommandQueue('22');
-    setState(() {
-      p2 = true;
-    });
-  }
-
-  _pressClear() {
-    widget.updateCommandQueue('wipOnOff');
-    setState(() {
-      p1 = p2 = false;
-    });
   }
 }
 
@@ -74,11 +55,13 @@ class P1P2Button extends StatelessWidget {
       {Key? key,
       required this.displayText,
       required this.onPressed,
-      required this.active})
+      required this.active,
+      required this.command})
       : super(key: key);
   final Text displayText;
-  final Function() onPressed;
+  final Function(String) onPressed;
   final bool active;
+  final String command;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +77,10 @@ class P1P2Button extends StatelessWidget {
                     width: 2,
                     color: Color.fromARGB(active ? 255 : 0, 182, 241, 178))),
             child: InkWell(
-              onTap: onPressed,
+              onTap: () {
+                onPressed(command);
+                HapticFeedback.lightImpact();
+              },
               customBorder: const CircleBorder(),
               child: Center(
                 child: displayText,
@@ -105,10 +91,14 @@ class P1P2Button extends StatelessWidget {
 
 class ClearButton extends StatelessWidget {
   const ClearButton(
-      {Key? key, required this.displayText, required this.onPressed})
+      {Key? key,
+      required this.displayText,
+      required this.onPressed,
+      required this.command})
       : super(key: key);
   final Text displayText;
-  final Function() onPressed;
+  final Function(String) onPressed;
+  final String command;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +111,10 @@ class ClearButton extends StatelessWidget {
                 color: const Color.fromARGB(255, 68, 68, 68),
                 borderRadius: BorderRadius.circular(20)),
             child: InkWell(
-              onTap: onPressed,
+              onTap: () {
+                onPressed(command);
+                HapticFeedback.lightImpact();
+              },
               customBorder: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               child: Center(

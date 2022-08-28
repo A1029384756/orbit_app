@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:orbit_app/modeinformation.dart';
 
 class ColorSelector extends StatelessWidget {
   const ColorSelector({Key? key, required this.updateCommandQueue})
@@ -11,36 +12,11 @@ class ColorSelector extends StatelessWidget {
     return (Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ColorButton(
-          color: Colors.transparent,
-          apiCommand: 'noled',
-          updateCommandQueue: updateCommandQueue,
-        ),
-        ColorButton(
-          color: const Color.fromARGB(255, 231, 135, 167),
-          apiCommand: 'pink',
-          updateCommandQueue: updateCommandQueue,
-        ),
-        ColorButton(
-          color: const Color.fromARGB(255, 184, 54, 54),
-          apiCommand: 'red',
-          updateCommandQueue: updateCommandQueue,
-        ),
-        ColorButton(
-          color: const Color.fromARGB(255, 238, 129, 56),
-          apiCommand: 'orange',
-          updateCommandQueue: updateCommandQueue,
-        ),
-        ColorButton(
-          color: const Color.fromARGB(255, 255, 255, 255),
-          apiCommand: 'white',
-          updateCommandQueue: updateCommandQueue,
-        ),
-        ColorButton(
-          color: const Color.fromARGB(255, 195, 35, 243),
-          apiCommand: 'purple',
-          updateCommandQueue: updateCommandQueue,
-        ),
+        for (String command in colorRGBAInfo.keys)
+          ColorButton(
+              color: colorRGBAInfo[command]!,
+              apiCommand: command,
+              updateCommandQueue: updateCommandQueue)
       ],
     ));
   }
