@@ -16,8 +16,9 @@ class MotorInterface extends ChangeNotifier {
   late IOWebSocketChannel _channel;
   late Timer pingInterval;
   ConnectionStatus connected = ConnectionStatus.disconnected;
-  bool motorRunning = false;
+  bool connectionFailed = false;
 
+  bool motorRunning = false;
   bool p1 = false;
   bool p2 = false;
   bool vfxBeep = false;
@@ -76,12 +77,15 @@ class MotorInterface extends ChangeNotifier {
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
           sendCommandFromQueue();
         });
+
+        connectionFailed = false;
       }
     } else {
       debugPrint('Max connection attempts exceeded');
       connectionAttempts = 0;
       connected = ConnectionStatus.disconnected;
       notifyListeners();
+      connectionFailed = true;
     }
   }
 

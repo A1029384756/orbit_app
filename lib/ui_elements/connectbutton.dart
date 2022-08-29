@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:orbit_app/motorinterface.dart';
 
 class ConnectButton extends StatelessWidget {
@@ -30,7 +31,10 @@ class ConnectButton extends StatelessWidget {
         child: Ink(
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: InkWell(
-            onTap: connectToOrbit,
+            onTap: () async {
+              HapticFeedback.lightImpact();
+              connectToOrbit();
+            },
             customBorder: const CircleBorder(),
             child: button,
           ),

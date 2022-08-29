@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:orbit_app/mode_screens/interviewmode.dart';
 import 'package:orbit_app/mode_screens/stopmotionmode.dart';
@@ -89,14 +90,40 @@ class Remote extends StatelessWidget {
                     ),
                     middle: Text('${tabInfo[index].title} Mode'),
                     trailing: Consumer<MotorInterface>(
-                        builder: (context, value, child) => ConnectButton(
-                              connectToOrbit: value.connectToOrbit,
-                              connectionStatus: value.connected,
-                            )),
+                        builder: (context, value, child) {
+                      if (value.connectionFailed) {
+                        value.connectionFailed = false;
+                        SchedulerBinding.instance.addPostFrameCallback(
+                            (_) => _showConnectionFailure(context));
+                      }
+                      return ConnectButton(
+                        connectToOrbit: value.connectToOrbit,
+                        connectionStatus: value.connected,
+                      );
+                    }),
                   ),
                   child: modeScreens[index]),
             );
           }),
         ));
+  }
+
+  _showConnectionFailure(BuildContext context) {
+    showCupertinoModalPopup(
+        context: context,
+        builder: ((context) => CupertinoAlertDialog(
+              title: const Text('Connection Failed!'),
+              content:
+                  const Text('Could not connect to Orbit, please try again.'),
+              actions: [
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK'),
+                )
+              ],
+            )));
   }
 }
