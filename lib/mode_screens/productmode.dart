@@ -28,8 +28,10 @@ class ProductMode extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Consumer<MotorInterface>(
-                builder: (context, value, child) =>
-                    Readout(battery: value.batteryPercent, rpm: value.speed),
+                builder: (context, value, child) => Readout(
+                    mode: value.currentMode,
+                    battery: value.batteryPercent,
+                    rpm: value.speed),
               ),
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Dial(

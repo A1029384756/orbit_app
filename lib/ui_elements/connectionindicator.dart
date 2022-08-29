@@ -8,10 +8,12 @@ class ConnectionIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: Alignment.centerLeft,
-        margin: const EdgeInsets.only(right: 100),
-        decoration: BoxDecoration(
-            color: connected ? Colors.green : Colors.red,
-            shape: BoxShape.circle));
+      alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.only(right: 100),
+      decoration: BoxDecoration(
+          color: connected ? Colors.green : Colors.red, shape: BoxShape.circle),
+      width: 10,
+      height: 10,
+    );
   }
 }

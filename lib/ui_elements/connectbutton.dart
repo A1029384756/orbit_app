@@ -18,7 +18,10 @@ class ConnectButton extends StatelessWidget {
         button = const Icon(CupertinoIcons.plus_circle);
         break;
       case ConnectionStatus.connecting:
-        button = const CupertinoActivityIndicator();
+        button = Container(
+          padding: const EdgeInsets.only(right: 7, bottom: 2),
+          child: const CupertinoActivityIndicator(),
+        );
         break;
       case ConnectionStatus.connected:
         button = const Icon(CupertinoIcons.check_mark_circled_solid);
