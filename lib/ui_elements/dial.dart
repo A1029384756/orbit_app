@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 
+import 'package:orbit_app/ui_elements/indicatorarc.dart';
+
 class Dial extends StatelessWidget {
   const Dial(
       {Key? key,
       required this.radius,
       required this.maxRotation,
       required this.rotationValue,
+      required this.arcOffset,
+      required this.numTicks,
       required this.onOff,
       required this.toggleDial,
       required this.onDialUpdate})
@@ -15,6 +19,8 @@ class Dial extends StatelessWidget {
   final int radius;
   final double maxRotation;
   final double rotationValue;
+  final int arcOffset;
+  final int numTicks;
   final bool onOff;
   final Function() toggleDial;
   final Function(double) onDialUpdate;
@@ -52,6 +58,17 @@ class Dial extends StatelessWidget {
             ),
           ),
         ),
+        Container(
+          alignment: Alignment.center,
+          width: radius.toDouble() * 2,
+          height: radius.toDouble() * 2,
+          child: CustomPaint(
+            painter: MeasurementArc(
+                lineCount: numTicks,
+                radius: radius + arcOffset,
+                tickLength: 10),
+          ),
+        )
       ]),
     ));
   }

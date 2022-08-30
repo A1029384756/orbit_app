@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:orbit_app/mode_screens/interviewmode.dart';
 import 'package:orbit_app/mode_screens/stopmotionmode.dart';
+import 'package:orbit_app/mode_screens/subjectmode.dart';
 import 'package:orbit_app/mode_screens/timelapsemode.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:orbit_app/motorinterface.dart';
@@ -45,10 +46,12 @@ class Remote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<TabInfo> tabInfo = [
-      TabInfo('Product', CupertinoIcons.cube_box,
-          modeInformation['Product']!['modeScaler']!),
-      TabInfo('Interview', CupertinoIcons.person,
-          modeInformation['Interview']!['modeScaler']!),
+      // TabInfo('Product', CupertinoIcons.cube_box,
+      //     modeInformation['Product']!['modeScaler']!),
+      // TabInfo('Interview', CupertinoIcons.person,
+      //     modeInformation['Interview']!['modeScaler']!),
+      TabInfo('Subject', CupertinoIcons.person,
+          modeInformation['Subject']!['modeScaler']!),
       TabInfo('Timelapse', CupertinoIcons.time,
           modeInformation['Timelapse']!['modeScaler']!),
       TabInfo('Stop-Motion', CupertinoIcons.timer,
@@ -56,8 +59,9 @@ class Remote extends StatelessWidget {
     ];
 
     const List<StatelessWidget> modeScreens = [
-      ProductMode(),
-      InterviewMode(),
+      // ProductMode(),
+      // InterviewMode(),
+      SubjectMode(),
       TimelapseMode(),
       StopmotionMode()
     ];

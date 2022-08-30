@@ -7,8 +7,8 @@ import 'package:orbit_app/ui_elements/readout.dart';
 import 'package:orbit_app/ui_elements/wipercontrols.dart';
 import 'package:orbit_app/ui_elements/colorselector.dart';
 
-class ProductMode extends StatelessWidget {
-  const ProductMode({Key? key}) : super(key: key);
+class SubjectMode extends StatelessWidget {
+  const SubjectMode({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class ProductMode extends StatelessWidget {
                     maxRotation: 2.2,
                     rotationValue: value.dialRotation,
                     arcOffset: 3,
-                    numTicks: 5,
+                    numTicks: 9,
                     onOff: value.motorRunning,
                     toggleDial: value.startStop,
                     onDialUpdate: value.updateDialStatus),

@@ -27,7 +27,7 @@ class MotorInterface extends ChangeNotifier {
   double dialRotation = 0;
   double speed = 0.0;
   int position = 0;
-  String currentMode = 'Product';
+  String currentMode = 'Subject';
   MotorDirection direction = MotorDirection.ccw;
 
   String visorColor = 'white';
@@ -73,6 +73,7 @@ class MotorInterface extends ChangeNotifier {
         updateCommandQueue(
             "{'action':'setMode','mode':'${mode_info.modes.indexOf(currentMode) + 2}'}");
         updateCommandQueue("{'action':'setSpeed','speed':'0'}");
+        updateCommandQueue("{'action':'$visorColor'}");
         pingInterval =
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
           sendCommandFromQueue();
@@ -133,6 +134,7 @@ class MotorInterface extends ChangeNotifier {
   changeLEDColor(String color) {
     updateCommandQueue("{'action':'$color'}");
     visorColor = color;
+    notifyListeners();
   }
 
   resetViewState() {
@@ -191,6 +193,8 @@ class MotorInterface extends ChangeNotifier {
     } else {
       currentMode = mode;
     }
+
+    notifyListeners();
   }
 
   receiveMessage(String event) {

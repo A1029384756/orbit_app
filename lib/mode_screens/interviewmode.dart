@@ -38,6 +38,8 @@ class InterviewMode extends StatelessWidget {
                     radius: 150,
                     maxRotation: 2.2,
                     rotationValue: value.dialRotation,
+                    arcOffset: 3,
+                    numTicks: 9,
                     onOff: value.motorRunning,
                     toggleDial: value.startStop,
                     onDialUpdate: value.updateDialStatus),
