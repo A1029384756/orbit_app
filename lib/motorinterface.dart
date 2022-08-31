@@ -143,11 +143,11 @@ class MotorInterface extends ChangeNotifier {
   controlWiperMode(String wiperCommand) {
     switch (wiperCommand) {
       case 'P1':
-        p1 = true;
+        p1 = connected == ConnectionStatus.connected;
         wiperCommand = '21';
         break;
       case 'P2':
-        p2 = true;
+        p2 = connected == ConnectionStatus.connected;
         wiperCommand = '22';
         break;
       case 'wipOnOff':
@@ -168,6 +168,7 @@ class MotorInterface extends ChangeNotifier {
 
     String formattedCommand = "{'action':'$wiperCommand'}";
     updateCommandQueue(formattedCommand);
+    notifyListeners();
   }
 
   toggleVFXBeep() {
