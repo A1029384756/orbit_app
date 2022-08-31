@@ -17,3 +17,5 @@ final Map<String, Color> colorRGBAInfo = {
   'purple': const Color.fromARGB(255, 195, 35, 243),
   'white': const Color.fromARGB(255, 255, 255, 255),
 };
+
+final List<int> stopMotionIncrements = [1, 5, 10, 15, 25];
