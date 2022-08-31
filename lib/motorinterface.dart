@@ -25,34 +25,29 @@ class MotorInterface extends ChangeNotifier {
   double dialRotation = 0;
   double speed = 0.0;
   int position = 0;
-  String currentMode = 'Product';
   MotorDirection direction = MotorDirection.ccw;
 
-  String visorColor = 'white';
+  String currentMode = modeInformation.keys.first;
+  String visorColor = colorRGBAInfo.keys.last;
 
   MotorInterface(String url) : _url = url;
-
-  int maxConnectionAttempts = 5;
-  int connectionAttempts = 0;
 
   connectToOrbit() async {
     if (connected == ConnectionStatus.connected) {
       _channel.sink.close();
       connected = ConnectionStatus.disconnected;
-      notifyListeners();
-      return;
     } else if (connected == ConnectionStatus.connecting) {
       return;
     } else {
       connected = ConnectionStatus.connecting;
       notifyListeners();
       _commandQueue.clear();
-      _channel = IOWebSocketChannel.connect(Uri.parse(_url));
+      _channel = IOWebSocketChannel.connect(Uri.parse(_url),
+          pingInterval: const Duration(milliseconds: 500));
       await Future.delayed(const Duration(milliseconds: 1000));
 
       if (_channel.innerWebSocket != null) {
         debugPrint('Connected');
-        connectionAttempts = 0;
         connected = ConnectionStatus.connected;
 
         _channel.stream.listen((event) {
@@ -71,6 +66,7 @@ class MotorInterface extends ChangeNotifier {
             "{'action':'setMode','mode':'${modeInformation.keys.toList().indexOf(currentMode) + 2}'}");
         updateCommandQueue("{'action':'setSpeed','speed':'0'}");
         updateCommandQueue("{'action':'$visorColor'}");
+
         pingInterval =
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
           sendCommandFromQueue();
@@ -78,25 +74,23 @@ class MotorInterface extends ChangeNotifier {
       } else {
         connectionFailed = true;
         connected = ConnectionStatus.disconnected;
-        notifyListeners();
       }
     }
+    notifyListeners();
   }
 
   startStop() {
-    if (connected == ConnectionStatus.connected) {
-      updateCommandQueue("{'action':'96'}");
+    updateCommandQueue("{'action':'96'}");
 
-      if (!motorRunning) {
-        if (dialRotation < 0) {
-          _commandQueue.removeWhere((element) => element == "{'action':'97'}");
-          direction = MotorDirection.ccw;
-          updateCommandQueue("{'action':'98'}");
-        } else if (dialRotation > 0) {
-          _commandQueue.removeWhere((element) => element == "{'action':'98'}");
-          direction = MotorDirection.cw;
-          updateCommandQueue("{'action':'97'}");
-        }
+    if (!motorRunning && connected == ConnectionStatus.connected) {
+      if (dialRotation < 0) {
+        _commandQueue.removeWhere((element) => element == "{'action':'97'}");
+        direction = MotorDirection.ccw;
+        updateCommandQueue("{'action':'98'}");
+      } else if (dialRotation > 0) {
+        _commandQueue.removeWhere((element) => element == "{'action':'98'}");
+        direction = MotorDirection.cw;
+        updateCommandQueue("{'action':'97'}");
       }
     }
   }
@@ -180,12 +174,9 @@ class MotorInterface extends ChangeNotifier {
   }
 
   changeMode(String mode) {
-    if (connected == ConnectionStatus.connected) {
-      int index = modeInformation.keys.toList().indexOf(mode) + 2;
-      updateCommandQueue("{'action':'setMode','mode':'$index'}");
-    } else {
-      currentMode = mode;
-    }
+    int index = modeInformation.keys.toList().indexOf(mode) + 2;
+    updateCommandQueue("{'action':'setMode','mode':'$index'}");
+    currentMode = mode;
 
     notifyListeners();
   }
@@ -197,7 +188,7 @@ class MotorInterface extends ChangeNotifier {
     currentMode = modeInformation.keys.elementAt(int.parse(data[2] - 2));
     position = int.parse(data[3]);
     motorRunning = int.parse(data[4]) == 0 ? false : true;
-    vfxBeep = data[7].toString().toLowerCase() == 'true';
+    vfxBeep = int.parse(data[7]) == 0 ? false : true;
     notifyListeners();
   }
 
