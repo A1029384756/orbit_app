@@ -38,20 +38,19 @@ class MotorInterface extends ChangeNotifier {
   connectToOrbit() async {
     if (connected == ConnectionStatus.connected) {
       _channel.sink.close();
-    } else if (connectionAttempts < maxConnectionAttempts &&
-        connected != ConnectionStatus.connecting) {
+      connected = ConnectionStatus.disconnected;
+      notifyListeners();
+      return;
+    } else if (connected == ConnectionStatus.connecting) {
+      return;
+    } else {
       connected = ConnectionStatus.connecting;
       notifyListeners();
       _commandQueue.clear();
-      await Future.delayed(const Duration(milliseconds: 1000));
       _channel = IOWebSocketChannel.connect(Uri.parse(_url));
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 1000));
 
-      if (_channel.innerWebSocket == null) {
-        connectionAttempts++;
-        debugPrint('Websocket not found');
-        connectToOrbit();
-      } else {
+      if (_channel.innerWebSocket != null) {
         debugPrint('Connected');
         connectionAttempts = 0;
         connected = ConnectionStatus.connected;
@@ -76,15 +75,11 @@ class MotorInterface extends ChangeNotifier {
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
           sendCommandFromQueue();
         });
-
-        connectionFailed = false;
+      } else {
+        connectionFailed = true;
+        connected = ConnectionStatus.disconnected;
+        notifyListeners();
       }
-    } else {
-      debugPrint('Max connection attempts exceeded');
-      connectionAttempts = 0;
-      connected = ConnectionStatus.disconnected;
-      notifyListeners();
-      connectionFailed = true;
     }
   }
 
