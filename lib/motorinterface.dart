@@ -15,7 +15,7 @@ class MotorInterface extends ChangeNotifier {
 
   MotorInterface(String url)
       : _url = url,
-        motor = Motor();
+        motor = Motor(url);
 
   connect() async {
     connection = ConnectionStatus.connecting;
@@ -30,6 +30,11 @@ class MotorInterface extends ChangeNotifier {
       debugPrint(motorResult.failure);
     }
 
+    notifyListeners();
+  }
+
+  updateDial(double newRotation) {
+    dialRotation = newRotation;
     notifyListeners();
   }
 }

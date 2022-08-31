@@ -44,22 +44,17 @@ class SubjectMode extends StatelessWidget {
                     numTicks: 9,
                     onOff: value.motor.motorState.state['running'],
                     toggleDial: () {
-                      value.motor.motorState.updateState(
+                      value.motor.updateState(
                           'running', !value.motor.motorState.state['running']);
                     },
-                    onDialUpdate: (newRotation) {
-                      value.dialRotation = newRotation;
-                    }),
+                    onDialUpdate: value.updateDial),
               ),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) => WiperControls(
-                        updateCommandQueue: value.controlWiperMode,
-                        p1: value.motor.motorState.state['p1'],
-                        p2: value.motor.motorState.state['p2'],
-                      )),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) =>
-                      ColorSelector(updateCommandQueue: value.changeLEDColor))
+              const WiperControls(),
+              ColorSelector(updateCommandQueue: (selectedColor) {
+                Provider.of<MotorInterface>(context, listen: false)
+                    .motor
+                    .updateState('visorColor', selectedColor);
+              })
             ],
           ),
         ),

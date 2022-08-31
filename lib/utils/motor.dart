@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:result_type/result_type.dart';
@@ -8,9 +9,11 @@ import 'package:result_type/result_type.dart';
 class Motor {
   late IOWebSocketChannel _channel;
   late Timer tickTimer;
-  final MotorState motorState;
+  final MotorState motorState = MotorState();
 
-  Motor() : motorState = MotorState();
+  Motor(url) {
+    connect(url);
+  }
 
   Future<Result<String, String>> connect(String url) async {
     IOWebSocketChannel channel = IOWebSocketChannel.connect(url);
@@ -24,6 +27,7 @@ class Motor {
       _channel = channel;
       return Success('Connected to Orbit!');
     } else {
+      _channel = channel;
       return Failure('Could not connect to Orbit!');
     }
   }
@@ -41,6 +45,14 @@ class Motor {
     motorState.updateState('running', int.parse(data[4]) == 0 ? false : true);
     motorState.updateState('vfxBeep', int.parse(data[7]) == 0 ? false : true);
   }
+
+  updateState(String property, dynamic value) {
+    if (_channel.innerWebSocket != null) {
+      motorState.updateState(property, value);
+    } else {
+      debugPrint('Not connected, not updating state');
+    }
+  }
 }
 
 class MotorState {
@@ -53,8 +65,8 @@ class MotorState {
           'p2': false,
           'vfxBeep': false,
           'directionClockwise': false,
-          'battery': 0,
-          'speed': 0,
+          'battery': 0.0,
+          'speed': 0.0,
           'position': 0,
           'mode': modeInformation.keys.toList().indexOf('Subject') + 2,
           'visorColor': colorRGBAInfo.keys.elementAt(5)

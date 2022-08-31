@@ -105,7 +105,9 @@ class Remote extends StatelessWidget {
                             (_) => _showConnectionFailure(context));
                       }
                       return ConnectButton(
-                        connectToOrbit: value.connect(),
+                        connectToOrbit: () {
+                          value.connect();
+                        },
                         connectionStatus: value.connection,
                       );
                     }),

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:orbit_app/modeinformation.dart';
 import 'package:provider/provider.dart';
 import 'package:orbit_app/motorinterface.dart';
 
@@ -29,9 +30,10 @@ class TimelapseMode extends StatelessWidget {
             children: [
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Readout(
-                    mode: value.currentMode,
-                    battery: value.batteryPercent,
-                    rpm: value.speed),
+                    mode: modeInformation.keys
+                        .elementAt(value.motor.motorState.state['mode'] - 2),
+                    battery: value.motor.motorState.state['battery'],
+                    rpm: value.motor.motorState.state['speed']),
               ),
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Dial(
@@ -39,20 +41,23 @@ class TimelapseMode extends StatelessWidget {
                     maxRotation: 2.2,
                     rotationValue: value.dialRotation,
                     arcOffset: 3,
-                    numTicks: 5,
-                    onOff: value.motorRunning,
-                    toggleDial: value.startStop,
-                    onDialUpdate: value.updateDialStatus),
+                    numTicks: 9,
+                    onOff: value.motor.motorState.state['running'],
+                    toggleDial: () {
+                      value.motor.motorState.updateState(
+                          'running', !value.motor.motorState.state['running']);
+                    },
+                    onDialUpdate: (newRotation) {
+                      value.dialRotation = newRotation;
+                    }),
               ),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) => WiperControls(
-                        updateCommandQueue: value.controlWiperMode,
-                        p1: value.p1,
-                        p2: value.p2,
-                      )),
-              Consumer<MotorInterface>(
-                  builder: (context, value, child) =>
-                      ColorSelector(updateCommandQueue: value.changeLEDColor))
+              const WiperControls(),
+              ColorSelector(updateCommandQueue: (selectedColor) {
+                Provider.of<MotorInterface>(context, listen: false)
+                    .motor
+                    .motorState
+                    .updateState('visorColor', selectedColor);
+              })
             ],
           ),
         ),

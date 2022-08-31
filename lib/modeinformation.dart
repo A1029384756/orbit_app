@@ -15,6 +15,6 @@ final Map<String, Color> colorRGBAInfo = {
   'pink': const Color.fromARGB(255, 231, 135, 167),
   'red': const Color.fromARGB(255, 184, 54, 54),
   'orange': const Color.fromARGB(255, 238, 129, 56),
-  'white': const Color.fromARGB(255, 255, 255, 255),
   'purple': const Color.fromARGB(255, 195, 35, 243),
+  'white': const Color.fromARGB(255, 255, 255, 255),
 };
