@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:orbit_app/mode_screens/interviewmode.dart';
+// import 'package:orbit_app/mode_screens/interviewmode.dart';
 import 'package:orbit_app/mode_screens/stopmotionmode.dart';
 import 'package:orbit_app/mode_screens/subjectmode.dart';
 import 'package:orbit_app/mode_screens/timelapsemode.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:orbit_app/motorinterface.dart';
 import 'package:orbit_app/ui_elements/bottombar.dart';
-import 'package:orbit_app/mode_screens/productmode.dart';
+//import 'package:orbit_app/mode_screens/productmode.dart';
 import 'package:orbit_app/ui_elements/connectbutton.dart';
 import 'package:orbit_app/ui_elements/connectionindicator.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +35,8 @@ class OrbitApp extends StatelessWidget {
         home: const Remote(),
         theme: CupertinoThemeData(
             brightness: Brightness.dark,
-            primaryColor: colorRGBAInfo[value.visorColor]),
+            primaryColor:
+                colorRGBAInfo[value.motor.motorState.state['visorColor']]),
       );
     });
   }
@@ -77,8 +78,11 @@ class Remote extends StatelessWidget {
             ],
             onTap: (value) {
               Provider.of<MotorInterface>(context, listen: false)
-                  .changeMode(modes[value]);
-              debugPrint(modes[value]);
+                  // .changeMode(modeInformation.keys.elementAt(value));
+                  .motor
+                  .motorState
+                  .updateState('mode', value + 2);
+              debugPrint(modeInformation.keys.elementAt(value));
               HapticFeedback.mediumImpact();
             },
           ),
@@ -90,7 +94,7 @@ class Remote extends StatelessWidget {
                     leading: Consumer<MotorInterface>(
                       builder: (context, value, child) => ConnectionIndicator(
                           connected:
-                              value.connected == ConnectionStatus.connected),
+                              value.connection == ConnectionStatus.connected),
                     ),
                     middle: Text('${tabInfo[index].title} Mode'),
                     trailing: Consumer<MotorInterface>(
@@ -101,8 +105,8 @@ class Remote extends StatelessWidget {
                             (_) => _showConnectionFailure(context));
                       }
                       return ConnectButton(
-                        connectToOrbit: value.connectToOrbit,
-                        connectionStatus: value.connected,
+                        connectToOrbit: value.connect(),
+                        connectionStatus: value.connection,
                       );
                     }),
                   ),

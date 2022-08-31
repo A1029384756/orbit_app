@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:orbit_app/modeinformation.dart';
 import 'package:provider/provider.dart';
 import 'package:orbit_app/motorinterface.dart';
 
@@ -29,9 +30,10 @@ class SubjectMode extends StatelessWidget {
             children: [
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Readout(
-                    mode: value.currentMode,
-                    battery: value.batteryPercent,
-                    rpm: value.speed),
+                    mode: modeInformation.keys
+                        .elementAt(value.motor.motorState.state['mode'] - 2),
+                    battery: value.motor.motorState.state['battery'],
+                    rpm: value.motor.motorState.state['speed']),
               ),
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Dial(
@@ -40,15 +42,20 @@ class SubjectMode extends StatelessWidget {
                     rotationValue: value.dialRotation,
                     arcOffset: 3,
                     numTicks: 9,
-                    onOff: value.motorRunning,
-                    toggleDial: value.startStop,
-                    onDialUpdate: value.updateDialStatus),
+                    onOff: value.motor.motorState.state['running'],
+                    toggleDial: () {
+                      value.motor.motorState.updateState(
+                          'running', !value.motor.motorState.state['running']);
+                    },
+                    onDialUpdate: (newRotation) {
+                      value.dialRotation = newRotation;
+                    }),
               ),
               Consumer<MotorInterface>(
                   builder: (context, value, child) => WiperControls(
                         updateCommandQueue: value.controlWiperMode,
-                        p1: value.p1,
-                        p2: value.p2,
+                        p1: value.motor.motorState.state['p1'],
+                        p2: value.motor.motorState.state['p2'],
                       )),
               Consumer<MotorInterface>(
                   builder: (context, value, child) =>

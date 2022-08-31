@@ -39,6 +39,7 @@ dependencies:
   english_words: ^4.0.0
   web_socket_channel: ^2.2.0
   provider: ^6.0.3
+  result_type: ^0.1.0
 
 dev_dependencies:
   flutter_test:
