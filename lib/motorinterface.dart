@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
-
-import 'modeinformation.dart' as mode_info;
 import 'modeinformation.dart';
 
 enum MotorDirection { cw, ccw }
@@ -27,7 +25,7 @@ class MotorInterface extends ChangeNotifier {
   double dialRotation = 0;
   double speed = 0.0;
   int position = 0;
-  String currentMode = 'Subject';
+  String currentMode = 'Product';
   MotorDirection direction = MotorDirection.ccw;
 
   String visorColor = 'white';
@@ -71,7 +69,7 @@ class MotorInterface extends ChangeNotifier {
 
         await Future.delayed(const Duration(milliseconds: 1000));
         updateCommandQueue(
-            "{'action':'setMode','mode':'${mode_info.modes.indexOf(currentMode) + 2}'}");
+            "{'action':'setMode','mode':'${modeInformation.keys.toList().indexOf(currentMode) + 2}'}");
         updateCommandQueue("{'action':'setSpeed','speed':'0'}");
         updateCommandQueue("{'action':'$visorColor'}");
         pingInterval =
@@ -147,7 +145,7 @@ class MotorInterface extends ChangeNotifier {
     p1 = false;
     p2 = false;
     vfxBeep = false;
-    visorColor = colors[5];
+    visorColor = colorRGBAInfo.keys.elementAt(5);
 
     notifyListeners();
   }
@@ -188,7 +186,7 @@ class MotorInterface extends ChangeNotifier {
 
   changeMode(String mode) {
     if (connected == ConnectionStatus.connected) {
-      int index = mode_info.modes.indexOf(mode) + 2;
+      int index = modeInformation.keys.toList().indexOf(mode) + 2;
       updateCommandQueue("{'action':'setMode','mode':'$index'}");
     } else {
       currentMode = mode;
@@ -198,14 +196,13 @@ class MotorInterface extends ChangeNotifier {
   }
 
   receiveMessage(String event) {
-    //debugPrint(event);
     List data = event.split(',');
     batteryPercent = double.parse(data[0]);
     speed = double.parse(data[1]);
-    currentMode = mode_info.modes[int.parse(data[2]) - 2];
+    currentMode = modeInformation.keys.elementAt(int.parse(data[2] - 2));
     position = int.parse(data[3]);
     motorRunning = int.parse(data[4]) == 0 ? false : true;
-    vfxBeep = data[5].toString().toLowerCase() == 'true';
+    vfxBeep = data[7].toString().toLowerCase() == 'true';
     notifyListeners();
   }
 

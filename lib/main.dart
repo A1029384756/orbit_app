@@ -1,14 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-// import 'package:orbit_app/mode_screens/interviewmode.dart';
+import 'package:orbit_app/mode_screens/interviewmode.dart';
 import 'package:orbit_app/mode_screens/stopmotionmode.dart';
-import 'package:orbit_app/mode_screens/subjectmode.dart';
 import 'package:orbit_app/mode_screens/timelapsemode.dart';
 import 'package:orbit_app/modeinformation.dart';
 import 'package:orbit_app/motorinterface.dart';
 import 'package:orbit_app/ui_elements/bottombar.dart';
-// import 'package:orbit_app/mode_screens/productmode.dart';
+import 'package:orbit_app/mode_screens/productmode.dart';
 import 'package:orbit_app/ui_elements/connectbutton.dart';
 import 'package:orbit_app/ui_elements/connectionindicator.dart';
 import 'package:provider/provider.dart';
@@ -46,12 +45,10 @@ class Remote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<TabInfo> tabInfo = [
-      // TabInfo('Product', CupertinoIcons.cube_box,
-      //     modeInformation['Product']!['modeScaler']!),
-      // TabInfo('Interview', CupertinoIcons.person,
-      //     modeInformation['Interview']!['modeScaler']!),
-      TabInfo('Subject', CupertinoIcons.person,
-          modeInformation['Subject']!['modeScaler']!),
+      TabInfo('Product', CupertinoIcons.cube_box,
+          modeInformation['Product']!['modeScaler']!),
+      TabInfo('Interview', CupertinoIcons.person,
+          modeInformation['Interview']!['modeScaler']!),
       TabInfo('Timelapse', CupertinoIcons.time,
           modeInformation['Timelapse']!['modeScaler']!),
       TabInfo('Stop-Motion', CupertinoIcons.timer,
@@ -59,9 +56,8 @@ class Remote extends StatelessWidget {
     ];
 
     const List<StatelessWidget> modeScreens = [
-      // ProductMode(),
-      // InterviewMode(),
-      SubjectMode(),
+      ProductMode(),
+      InterviewMode(),
       TimelapseMode(),
       StopmotionMode()
     ];
@@ -77,8 +73,8 @@ class Remote extends StatelessWidget {
             ],
             onTap: (value) {
               Provider.of<MotorInterface>(context, listen: false)
-                  .changeMode(modes[value]);
-              debugPrint(modes[value]);
+                  .changeMode(modeInformation.keys.elementAt(value));
+              debugPrint(modeInformation.keys.elementAt(value));
               HapticFeedback.mediumImpact();
             },
           ),
