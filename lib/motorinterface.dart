@@ -64,14 +64,9 @@ class MotorInterface extends ChangeNotifier {
         await Future.delayed(const Duration(milliseconds: 1000));
 
         //Assign valid motor state on connection
-        updateCommandQueue(
-            "{'action':'setMode','mode':'${modeInformation.keys.toList().indexOf(currentMode) + 2}'}");
-        updateCommandQueue(
-            "{'action':'setAccel,'accel',${modeInformation[currentMode]!['accel']}");
-        updateCommandQueue(
-            "{'action':'setDecel,'decel',${modeInformation[currentMode]!['accel']}");
-        updateCommandQueue("{'action':'setSpeed','speed':'0'}");
-        updateCommandQueue("{'action':'$visorColor'}");
+        changeMode(currentMode);
+        updateSpeed(0);
+        changeLEDColor(visorColor);
 
         pingInterval =
             Timer.periodic(const Duration(milliseconds: 500), (timer) {
@@ -101,7 +96,7 @@ class MotorInterface extends ChangeNotifier {
     }
   }
 
-  updateDialStatus(double rotation) {
+  updateSpeed(double rotation) {
     dialRotation = rotation;
     if (dialRotation < 0 && direction == MotorDirection.cw) {
       _commandQueue.removeWhere((element) => element == "{'action':'97'}");

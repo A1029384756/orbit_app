@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:orbit_app/modeinformation.dart';
 import 'package:provider/provider.dart';
 import 'package:orbit_app/motorinterface.dart';
 
@@ -41,8 +42,9 @@ class InterviewMode extends StatelessWidget {
                     arcOffset: 3,
                     numTicks: 9,
                     onOff: value.motorRunning,
+                    visorColor: colorRGBAInfo[value.visorColor]!,
                     toggleDial: value.startStop,
-                    onDialUpdate: value.updateDialStatus),
+                    onDialUpdate: value.updateSpeed),
               ),
               Consumer<MotorInterface>(
                   builder: (context, value, child) => WiperControls(

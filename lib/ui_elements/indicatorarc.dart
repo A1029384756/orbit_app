@@ -5,17 +5,19 @@ class MeasurementArc extends CustomPainter {
   MeasurementArc(
       {required this.lineCount,
       required this.radius,
-      required this.tickLength});
+      required this.tickLength,
+      required this.arcColor});
   final int lineCount;
   final int radius;
   final int tickLength;
+  final Color arcColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     var paint1 = Paint()
-      ..color = const Color.fromARGB(255, 235, 236, 235)
+      ..color = arcColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1;
+      ..strokeWidth = 2;
     //draw arc
     canvas.drawArc(
         Offset(-radius.toDouble(), -radius.toDouble()) &

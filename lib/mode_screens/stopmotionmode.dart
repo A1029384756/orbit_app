@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:orbit_app/modeinformation.dart';
 import 'package:provider/provider.dart';
 import 'package:orbit_app/motorinterface.dart';
 
@@ -40,8 +41,9 @@ class StopmotionMode extends StatelessWidget {
                     arcOffset: 3,
                     numTicks: 5,
                     onOff: value.motorRunning,
+                    visorColor: colorRGBAInfo[value.visorColor]!,
                     toggleDial: value.startStop,
-                    onDialUpdate: value.updateDialStatus),
+                    onDialUpdate: value.updateSpeed),
               ),
               Consumer<MotorInterface>(
                   builder: (context, value, child) =>

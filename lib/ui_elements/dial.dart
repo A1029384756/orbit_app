@@ -13,6 +13,7 @@ class Dial extends StatelessWidget {
       required this.arcOffset,
       required this.numTicks,
       required this.onOff,
+      required this.visorColor,
       required this.toggleDial,
       required this.onDialUpdate})
       : super(key: key);
@@ -22,6 +23,7 @@ class Dial extends StatelessWidget {
   final int arcOffset;
   final int numTicks;
   final bool onOff;
+  final Color visorColor;
   final Function() toggleDial;
   final Function(double) onDialUpdate;
 
@@ -66,7 +68,8 @@ class Dial extends StatelessWidget {
             painter: MeasurementArc(
                 lineCount: numTicks,
                 radius: radius + arcOffset,
-                tickLength: 10),
+                tickLength: 10,
+                arcColor: visorColor),
           ),
         )
       ]),
