@@ -62,8 +62,14 @@ class MotorInterface extends ChangeNotifier {
         });
 
         await Future.delayed(const Duration(milliseconds: 1000));
+
+        //Assign valid motor state on connection
         updateCommandQueue(
             "{'action':'setMode','mode':'${modeInformation.keys.toList().indexOf(currentMode) + 2}'}");
+        updateCommandQueue(
+            "{'action':'setAccel,'accel',${modeInformation[currentMode]!['accel']}");
+        updateCommandQueue(
+            "{'action':'setDecel,'decel',${modeInformation[currentMode]!['accel']}");
         updateCommandQueue("{'action':'setSpeed','speed':'0'}");
         updateCommandQueue("{'action':'$visorColor'}");
 
@@ -176,6 +182,10 @@ class MotorInterface extends ChangeNotifier {
   changeMode(String mode) {
     int index = modeInformation.keys.toList().indexOf(mode) + 2;
     updateCommandQueue("{'action':'setMode','mode':'$index'}");
+    updateCommandQueue(
+        "{'action':'setAccel,'accel':'${modeInformation[currentMode]!['accel']}'");
+    updateCommandQueue(
+        "{'action':'setDecel,'decel':'${modeInformation[currentMode]!['accel']}'");
     currentMode = mode;
 
     notifyListeners();
