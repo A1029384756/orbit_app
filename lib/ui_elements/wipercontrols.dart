@@ -20,7 +20,7 @@ class WiperControls extends StatelessWidget {
               style: buttonFormatting,
             ),
             onPressed: () {
-              value.motor.updateState('p1', true);
+              value.updateState('p1', true);
             },
             active: value.motor.motorState.state['p1'],
           ),
@@ -29,8 +29,8 @@ class WiperControls extends StatelessWidget {
             builder: (context, value, child) => ClearButton(
                 displayText: Text('Clear', style: buttonFormatting),
                 onPressed: () {
-                  value.motor.updateState('p1', false);
-                  value.motor.updateState('p2', false);
+                  value.updateState('p1', false);
+                  value.updateState('p2', false);
                 })),
         Consumer<MotorInterface>(
           builder: (context, value, child) => P1P2Button(
@@ -39,7 +39,7 @@ class WiperControls extends StatelessWidget {
               style: buttonFormatting,
             ),
             onPressed: () {
-              value.motor.updateState('p2', true);
+              value.updateState('p2', true);
             },
             active: value.motor.motorState.state['p2'],
           ),

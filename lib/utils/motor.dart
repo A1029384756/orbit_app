@@ -7,23 +7,31 @@ import 'package:web_socket_channel/io.dart';
 import 'package:result_type/result_type.dart';
 
 class Motor {
-  late IOWebSocketChannel _channel;
+  IOWebSocketChannel? _channel;
   late Timer tickTimer;
-  final MotorState motorState = MotorState();
+  late Function onMessage;
+  late Function onDisconnect;
+  MotorState motorState = MotorState();
 
-  Motor(url) {
-    connect(url);
+  Motor(String url, Function notifyOnMessageRecieved,
+      Function notifyOnDisconnect) {
+    onMessage = notifyOnMessageRecieved;
+    onDisconnect = notifyOnDisconnect;
   }
 
   Future<Result<String, String>> connect(String url) async {
-    IOWebSocketChannel channel = IOWebSocketChannel.connect(url);
+    IOWebSocketChannel channel = IOWebSocketChannel.connect(url,
+        pingInterval: const Duration(milliseconds: 500));
     await Future.delayed(const Duration(milliseconds: 1000));
 
     if (channel.innerWebSocket != null) {
-      channel.stream
-          .listen((event) => recieveMessage, onDone: tickTimer.cancel);
       tickTimer = Timer.periodic(
           const Duration(milliseconds: 500), (timer) => sendMessage);
+      channel.stream.listen((event) => recieveMessage, onDone: () {
+        tickTimer.cancel();
+        debugPrint('Disconnected');
+        onDisconnect();
+      });
       _channel = channel;
       return Success('Connected to Orbit!');
     } else {
@@ -32,8 +40,13 @@ class Motor {
     }
   }
 
+  disconnect() {
+    _channel!.sink.close();
+    motorState = MotorState();
+  }
+
   sendMessage() {
-    _channel.sink.add(jsonEncode(motorState.state));
+    _channel!.sink.add(jsonEncode(motorState.state));
   }
 
   recieveMessage(String event) {
@@ -44,13 +57,18 @@ class Motor {
     motorState.updateState('position', int.parse(data[3]));
     motorState.updateState('running', int.parse(data[4]) == 0 ? false : true);
     motorState.updateState('vfxBeep', int.parse(data[7]) == 0 ? false : true);
+    onMessage();
   }
 
   updateState(String property, dynamic value) {
-    if (_channel.innerWebSocket != null) {
-      motorState.updateState(property, value);
-    } else {
-      debugPrint('Not connected, not updating state');
+    final channel = _channel;
+    if (channel != null) {
+      debugPrint(_channel?.innerWebSocket?.readyState.toString());
+      if (_channel?.innerWebSocket?.readyState == 1) {
+        motorState.updateState(property, value);
+      } else {
+        debugPrint('Not connected, not updating state');
+      }
     }
   }
 }
@@ -73,6 +91,7 @@ class MotorState {
         };
 
   updateState(String property, dynamic value) {
+    debugPrint('Updating $property with state $value');
     state[property] = value;
   }
 }

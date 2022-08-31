@@ -5,29 +5,42 @@ import 'package:result_type/result_type.dart';
 enum ConnectionStatus { connected, connecting, disconnected }
 
 class MotorInterface extends ChangeNotifier {
-  final String _url;
-  final Motor motor;
+  late String _url;
+  late Motor motor;
 
   ConnectionStatus connection = ConnectionStatus.disconnected;
   bool connectionFailed = false;
 
   double dialRotation = 0.0;
 
-  MotorInterface(String url)
-      : _url = url,
-        motor = Motor(url);
+  MotorInterface(String url) {
+    motor = Motor(url, notifyOnMessageRecieved, notifyOnDisconnect);
+    _url = url;
+  }
 
   connect() async {
-    connection = ConnectionStatus.connecting;
-    notifyListeners();
-    Result<String, String> motorResult = await motor.connect(_url);
-    if (motorResult.isSuccess) {
-      connection = ConnectionStatus.connected;
-      debugPrint(motorResult.success);
-    } else {
-      connection = ConnectionStatus.disconnected;
-      connectionFailed = true;
-      debugPrint(motorResult.failure);
+    switch (connection) {
+      case ConnectionStatus.disconnected:
+        connection = ConnectionStatus.connecting;
+        notifyListeners();
+        Result<String, String> motorResult = await motor.connect(_url);
+        if (motorResult.isSuccess) {
+          connection = ConnectionStatus.connected;
+          debugPrint(motorResult.success);
+        } else {
+          connection = ConnectionStatus.disconnected;
+          connectionFailed = true;
+          debugPrint(motorResult.failure);
+        }
+        break;
+      case ConnectionStatus.connecting:
+        break;
+      case ConnectionStatus.connected:
+        connection = ConnectionStatus.disconnected;
+        motor.disconnect();
+        break;
+      default:
+        break;
     }
 
     notifyListeners();
@@ -36,5 +49,22 @@ class MotorInterface extends ChangeNotifier {
   updateDial(double newRotation) {
     dialRotation = newRotation;
     notifyListeners();
+  }
+
+  notifyOnMessageRecieved() {
+    notifyListeners();
+  }
+
+  notifyOnDisconnect() {
+    connection = ConnectionStatus.disconnected;
+    notifyListeners();
+  }
+
+  updateState(String property, dynamic value) {
+    if (connection == ConnectionStatus.connected) {
+      motor.updateState(property, value);
+    } else {
+      debugPrint('Not updating state, not connected');
+    }
   }
 }

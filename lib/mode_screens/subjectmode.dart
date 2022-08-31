@@ -44,7 +44,7 @@ class SubjectMode extends StatelessWidget {
                     numTicks: 9,
                     onOff: value.motor.motorState.state['running'],
                     toggleDial: () {
-                      value.motor.updateState(
+                      value.updateState(
                           'running', !value.motor.motorState.state['running']);
                     },
                     onDialUpdate: value.updateDial),
@@ -52,7 +52,6 @@ class SubjectMode extends StatelessWidget {
               const WiperControls(),
               ColorSelector(updateCommandQueue: (selectedColor) {
                 Provider.of<MotorInterface>(context, listen: false)
-                    .motor
                     .updateState('visorColor', selectedColor);
               })
             ],
