@@ -3,10 +3,10 @@ library motor_mode_infomation;
 import 'dart:ui';
 
 final Map<String, Map<String, double>> modeInformation = {
-  'Product': {'modeScaler': 0.666},
-  'Interview': {'modeScaler': 0.0333},
-  'Timelapse': {'modeScaler': 0.000444},
-  'Stop-Motion': {'modeScaler': 0.6}
+  'Product': {'modeScaler': 0.666, 'accel': 1000},
+  'Interview': {'modeScaler': 0.0333, 'accel': 500},
+  'Timelapse': {'modeScaler': 0.000444, 'accel': 250},
+  'Stop-Motion': {'modeScaler': 0.6, 'accel': 250}
 };
 
 final Map<String, Color> colorRGBAInfo = {
