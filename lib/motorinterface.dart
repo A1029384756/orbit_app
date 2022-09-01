@@ -23,7 +23,8 @@ class MotorInterface extends ChangeNotifier {
 
   double batteryPercent = 0;
   double dialRotation = 0;
-  double speed = 0.0;
+  double speed = 0;
+  double stopMotionIncrement = 0;
   int position = 0;
   MotorDirection direction = MotorDirection.ccw;
 
@@ -191,10 +192,11 @@ class MotorInterface extends ChangeNotifier {
     List data = event.split(',');
     batteryPercent = double.parse(data[0]);
     speed = double.parse(data[1]);
-    currentMode = modeInformation.keys.elementAt(int.parse(data[2] - 2));
+    currentMode = modeInformation.keys.elementAt(int.parse(data[2]) - 2);
     position = int.parse(data[3]);
     motorRunning = int.parse(data[4]) == 0 ? false : true;
-    vfxBeep = int.parse(data[7]) == 0 ? false : true;
+    stopMotionIncrement = double.parse(data[7]);
+    vfxBeep = int.parse(data[8]) == 0 ? false : true;
     notifyListeners();
   }
 

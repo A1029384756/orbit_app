@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 
 class Readout extends StatelessWidget {
   const Readout(
-      {Key? key, required this.mode, required this.battery, required this.rpm})
+      {Key? key,
+      required this.mode,
+      required this.battery,
+      required this.rpm,
+      required this.increment})
       : super(key: key);
   final String mode;
   final double battery;
   final double rpm;
+  final double increment;
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +40,14 @@ class Readout extends StatelessWidget {
         displayedInformation = [
           MotorDisplayColumn(title: 'Battery', element: battery),
           const MotorDisplayColumn(title: 'Rotations', element: 1),
-          MotorDisplayColumn(title: 'Hours', element: rpm)
+          MotorDisplayColumn(title: 'Hours', element: (1 / rpm).roundToDouble())
         ];
         break;
       case 'Stop-Motion':
         displayedInformation = [
           MotorDisplayColumn(title: 'Battery', element: battery),
           MotorDisplayColumn(title: 'RPM', element: rpm),
-          MotorDisplayColumn(title: 'Angle', element: rpm)
+          MotorDisplayColumn(title: 'Angle', element: increment!)
         ];
         break;
       default:

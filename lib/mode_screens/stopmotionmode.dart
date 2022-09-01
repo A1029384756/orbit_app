@@ -29,9 +29,11 @@ class StopmotionMode extends StatelessWidget {
             children: [
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Readout(
-                    mode: value.currentMode,
-                    battery: value.batteryPercent,
-                    rpm: value.speed),
+                  mode: value.currentMode,
+                  battery: value.batteryPercent,
+                  rpm: value.speed,
+                  increment: value.stopMotionIncrement,
+                ),
               ),
               Consumer<MotorInterface>(
                 builder: (context, value, child) => Dial(
