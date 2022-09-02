@@ -98,10 +98,8 @@ class MotorDisplayColumn extends StatelessWidget {
   const MotorDisplayColumn(
       {Key? key, required this.title, required this.element})
       : super(key: key);
-  final TextStyle titleStyle =
-      const TextStyle(fontSize: 12, fontFamily: 'DSEG14Classic');
-  final TextStyle infoStyle =
-      const TextStyle(fontSize: 24, fontFamily: 'DSEG14Classic');
+  final TextStyle titleStyle = const TextStyle(fontSize: 12);
+  final TextStyle infoStyle = const TextStyle(fontSize: 24);
   final String title;
   final double element;
 

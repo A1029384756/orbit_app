@@ -10,7 +10,7 @@ final Map<String, Map<String, double>> modeInformation = {
 };
 
 final Map<String, Color> colorRGBAInfo = {
-  'noled': const Color.fromARGB(128, 128, 128, 128),
+  'noled': Colors.transparent,
   'pink': Colors.pink,
   'red': Colors.red,
   'orange': Colors.orange,
