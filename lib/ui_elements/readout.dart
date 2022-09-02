@@ -47,7 +47,7 @@ class Readout extends StatelessWidget {
         displayedInformation = [
           MotorDisplayColumn(title: 'Battery', element: battery),
           MotorDisplayColumn(title: 'RPM', element: rpm),
-          MotorDisplayColumn(title: 'Angle', element: increment!)
+          MotorDisplayColumn(title: 'Angle', element: increment)
         ];
         break;
       default:
